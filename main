@@ -1,34 +1,91 @@
 #include<iostream>
 #include<fstream>
 #include<string>
+#include<vector>
 #include<map>
+#include<list>
+#include<Windows.h>
+#include"Node.h"
 using namespace std;
 int main() {
-	ifstream fin;
-	string Filename = "Source.txt";
-	int A[256];
-	int amount;
-	for (int i = 0; i < 256; i++) A[i] = 0;
+	SetConsoleOutputCP(1251);
+	SetConsoleCP(1251);
+	ifstream fin, fin1;
+	string Filename1 = "Source.txt";
+	string Filename2 = "War and peace.txt";
+	string Filename3 = "Ex.txt";
+	string Output = "OUT.dat";
+	map<char, int> M;
+	list<Node*> t;
+	int amount = 0, final_amount;
 	char d;
-	fin.open(Filename);
+	fin.open(Filename3);
 	if (!fin.is_open()) {
 		cout << "Error!" << endl;
 	}
 	else {
 		cout << "File is opened!" << endl;
 		while (fin.get(d)) {
-			A[int(d)]++;
+			M[d]++;
 			amount++;
 		}
 	}
+	cout << endl;
 	fin.close();
-	for (int i = 0; i < 256; i++) {
-		cout << i << " - " << float(A[i])/float(amount) << endl;
+	for (map<char, int>::iterator itr = M.begin(); itr != M.end(); itr++) {
+		Node *p = new Node;
+		p->c = itr->first;
+		p->a = itr->second;
+		t.push_back(p);
+	} while (t.size() != 1) {
+		t.sort(MyCompare());
+		Node *L = t.front();
+		t.pop_front();
+		Node *R = t.front();
+		t.pop_front();
+		Node *P = new Node(L, R);
+		t.push_back(P);
 	}
-	//cout << amount << endl;
-	map<char, int> M;
-	for (int i = 0; i < 256; i++) {
-		M[char(i)] = A[i];
+	Node *root = t.front();
+	BuildTable(root);
+	//print(root);
+	for (map<char, int>::iterator im = M.begin(); im != M.end(); im++) {
+		if (im->second != 0) {
+			char c = im->first;
+			vector<bool> x = table[c];
+			cout << im->first << "::";
+			for (int n = 0; n < x.size(); n++)
+				cout << x[n];
+			cout << endl;
+			final_amount += (x.size()*(im->second));
+		}
 	}
+	cout << "amount = " << amount << endl;
+	cout << "Is it necessary: " << float(final_amount) / float(amount*8)<<endl;
+	cout << "Are you going to continue?(Y or N)" << endl;
+	char answer;
+	cin >> answer;
+	if (answer == 'N') return 0;
+	/*for (int i = 0; i < H1.length(); i++) {
+		char c = H1[i];
+		vector<bool> x = table[c];
+		for (int n = 0; n < x.size(); n++)
+			cout << x[n];
+	}*/
+	ofstream out(Output, ios::binary);
+	/*fin1.open(Filename3);
+	if (!fin1.is_open()) {
+		cout << "Error!" << endl;
+	}
+	else {
+		cout << "File is opened!" << endl;
+		while (fin1.get(d)) {
+			vector<bool> x = table[d];
+			out.write((char*)(&x), sizeof(x));
+		}
+	}
+	fin1.close();*/
+	cout << sizeof(bool) << endl;
+	out.close();
 	return 0;
 }

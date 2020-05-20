@@ -1,0 +1,48 @@
+void encode(string Source, string Encoded_file) {
+	map<char, int> M;
+	map<char, double> M1;
+	list<Node*> t;
+	ifstream fin1, fin2;
+	int amount = 0, namount = 0;
+	double low, high, lowold, highold;
+	char d;
+	fin1.open(Source);
+	if (!fin1.is_open()) {
+		cout << "Error!" << endl;
+	}
+	else {
+		cout << "File is opened!" << endl;
+		while (fin1.get(d)) {
+			M[d]++;
+			amount++;
+		}
+	}
+	cout << endl;
+	fin1.close();
+	for (map<char, int>::iterator itr = M.begin(); itr != M.end(); itr++) {
+		Node *p = new Node;
+		p->c = itr->first;
+		p->a = double(itr->second)/double(amount);
+		M1[itr->first] = p->a;
+		if (p->c) namount++;
+		t.push_back(p);
+	}
+	Mymap *MM = createMymap(M1);
+	sortMymap(MM, namount);
+	PrintMyMap(MM, namount);
+	/*for (int i = 0; i < namount; i++) {
+		cout << MM[i]<<endl;
+	}*/
+	while (t.size() != 1) {
+		t.sort(MyCompare());
+		Node *L = t.front();
+		t.pop_front();
+		Node *R = t.front();
+		t.pop_front();
+		Node *P = new Node(L, R);
+		t.push_back(P);
+	}
+	Node *root = t.front();
+	
+	print(root);
+}

@@ -1,0 +1,15 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include<iostream>
+#include<Windows.h>
+#include"Decoding.h"
+#include"Encoding.h"
+using namespace std;
+int main() {
+	SetConsoleOutputCP(1251);
+	SetConsoleCP(1251);
+	char FILE1[] = "MyFile1.txt", FILE2[] = "MyFile2.txt", FILE3[] = "MyFile3.txt";
+	encode(FILE1, FILE2);
+	cout << "end" << endl;
+	decode(FILE2, FILE3);
+	return 0;
+}

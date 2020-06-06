@@ -1,0 +1,83 @@
+#pragma once
+#include <stdio.h>
+#include <stdlib.h>
+#include"Data.h"
+
+void start_inputing_bits(void) {
+	bits_to_go = 0;
+	garbage_bits = 0;
+}
+int input_bit(void) {
+	int t;
+	if (bits_to_go == 0) {
+		buffer = getc(in);
+		if (buffer == EOF) {
+			garbage_bits++;
+			if (garbage_bits > BITS_IN_REGISTER - 2) {
+				printf("Ошибка в сжатом файле\n");
+				exit(-1);
+			}
+		}
+		bits_to_go = 8;
+	}
+	t = buffer & 1;
+	buffer >>= 1;
+	bits_to_go--;
+	return t;
+}
+void start_decoding(void) {
+	int i;
+	value = 0l;
+	for (i = 1; i <= BITS_IN_REGISTER; i++)
+		value = 2 * value + input_bit();
+	low = 0l;
+	high = TOP_VALUE;
+}
+int decode_symbol(void) {
+	long range;
+	int cum, symbol;
+	range = (long)(high - low) + 1;
+	cum = (int)((((long)(value - low) + 1) * cum_freq[0] - 1) / range);
+	for (symbol = 1; cum_freq[symbol] > cum; symbol++);
+	high = low + (range * cum_freq[symbol - 1]) / cum_freq[0] - 1;
+	low = low + (range * cum_freq[symbol]) / cum_freq[0];
+	while (true) {
+		if (high < HALF) {}
+		else if (low >= HALF) {
+			value -= HALF;
+			low -= HALF;
+			high -= HALF;
+		}
+		else if (low >= FIRST_QTR && high < THIRD_QTR) {
+			value -= FIRST_QTR;
+			low -= FIRST_QTR;
+			high -= FIRST_QTR;
+		}
+		else
+			break;
+		low += low;
+		high += high + 1;
+		value += value + input_bit();
+	}
+	return symbol;
+}
+void decode(char *infile, char *outfile) {
+	int ch, symbol;
+	in = fopen(infile, "r+b");
+	out = fopen(outfile, "w+b");
+	if (in == NULL || out == NULL)
+		return;
+	start_model();
+	start_inputing_bits();
+	start_decoding();
+	while (true) {
+		symbol = decode_symbol();
+		if (symbol == EOF_SYMBOL)
+			break;
+		ch = index_to_char[symbol];
+		putc(ch, out);
+		update_model(symbol);
+	}
+	fclose(in);
+	fclose(out);
+}
